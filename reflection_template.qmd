@@ -19,80 +19,167 @@ execute:
 
 **WD-1: I can import data from a *variety* of formats (e.g., csv, xlsx, txt, etc.).**
 
--   `csv`
+`csv`
+
+Lab 3, Question 1
 
 ```{r wd-1-csv}
-
+library("here")
+hiphop <- read_csv(here("hiphop.csv"))
 ```
 
--   `xlsx`
+`xlsx`
+
+-   Practice Activity 3, Question 1
 
 ```{r wd-1-xlsx}
+library("here")
+library(readxl) 
+military <- read_xlsx(here::here("data", 
+                                 "gov_spending_per_capita.xlsx"), 
+                      sheet = "Share of Govt. spending", 
+                      skip = 7, 
+                      n_max = 191)
 
 ```
 
--   `txt`
+`txt`
+
+-   Practice Activity 2, Step 2
 
 ```{r wd-1-txt}
+library("here")
+read_tsv(here::here("Week 2", "Ages_Data", "ages_tab.txt"))
 
 ```
 
 **WD-2: I can select necessary columns from a dataset.**
 
+-   Lab 3, Question 9
+
 ```{r wd-2}
+hiphop_demographic <- hiphop_clean |> 
+  distinct(subj, .keep_all = TRUE) |>
+    select(sex, age, ethnic)
+      
+summary(hiphop_demographic)
 
 ```
 
 **WD-3: I can filter rows from a dataframe for a *variety* of data types (e.g., numeric, integer, character, factor, date).**
 
--   numeric
+`numeric`
+
+-   Lab 3, Question 14
 
 ```{r wd-3-numeric}
-
+bieberDataset <- hiphop_clean |>
+  distinct(subj, .keep_all = TRUE) |>
+    filter(simple_ethnic == "white",
+           sex == "Male",
+           city >= 10000 & city <= 60000,
+           age >= 17,
+           age <= 23
+           ) |> 
+               select(c(subj, bieber)) |>
+                  slice_max(bieber)
 ```
 
--   character -- specifically a string
+`character -- specifically a string`
+
+-   Lab 3, Question 14
 
 ```{r wd-3-string}
-
+bieberDataset <- hiphop_clean |>
+  distinct(subj, .keep_all = TRUE) |>
+    filter(simple_ethnic == "white",
+           sex == "Male",
+           city >= 10000 & city <= 60000,
+           age >= 17,
+           age <= 23
+           ) |> 
+               select(c(subj, bieber)) |>
+                  slice_max(bieber)
 ```
 
--   factor
+`factor`
+
+-   Lab 4, Question 3
 
 ```{r wd-3-factor}
-
+avocado_major_regions |> 
+  filter(year == 2017, type == "organic") |>
+  summarize(region, `Total Volume`, Small_Hass,  Date) |>
+  slice_max(Small_Hass) 
 ```
 
--   date
+`date`
+
+-   Practice Activity 5.1, Question 3
 
 ```{r wd-3-date}
-
+suspects <- suspects |> 
+  filter(!(wday(Time.Spotted, week_start = 1) %in% c(2, 4))) |>
+  mutate(Weekday = wday(Time.Spotted, label = TRUE, week_start = 1))
 ```
 
 **WD-4: I can modify existing variables and create new variables in a dataframe for a *variety* of data types (e.g., numeric, integer, character, factor, date).**
 
--   numeric
+`numeric`
+
+-   Lab 4, Question 6
 
 ```{r wd-4-numeric}
+california_regions <- tibble(region = c("LosAngeles",
+                                         "SanDiego", 
+                                         "Sacramento",
+                                         "SanFrancisco"))
 
+avocado_california <- avocado_clean |>
+  semi_join(y = california_regions, by = "region") 
+
+group_by(.data = avocado_california, region, type) |>
+  summarise(Mean = mean(AveragePrice), .groups = 'drop') |>
+  pivot_wider(names_from = type,
+              values_from = Mean) |>
+  mutate(difference = (organic - conventional)) |>
+  arrange(-difference) |>
+  ggplot(mapping = aes(x = region, y = difference, fill = region)) + 
+    geom_bar(stat='identity') + 
+    labs(x = "California Region",
+         y = "Difference of Conventional and Organic Avocado Prices") + 
+    coord_flip()
 ```
 
--   character -- specifically a string
+`character -- specifically a string`
+
+-   Lab 3, Question 5
 
 ```{r wd-4-string}
-
+hiphop_clean <- hiphop |> 
+  mutate(
+    across(.cols = c(word, subj, sex, ethnic), .fns = ~as_factor(.x)), 
+    city = replace(city, city == 0, NA),
+    county = replace(county, county == 0, NA)
+  ) 
 ```
 
--   factor
+`factor`
+
+-   
 
 ```{r wd-4-factor}
 
 ```
 
--   date
+`date`
+
+-   Practice Activity 5.1, Question 3
 
 ```{r wd-4-date}
-
+suspects <- suspects |> 
+  filter(!(wday(Time.Spotted, week_start = 1) %in% c(2, 4))) |>
+  mutate(Weekday = wday(Time.Spotted, label = TRUE, week_start = 1))
 ```
 
 **WD-5: I can use mutating joins to combine multiple dataframes.**

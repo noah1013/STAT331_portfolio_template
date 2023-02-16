@@ -21,7 +21,7 @@ execute:
 
 `csv`
 
-Lab 3, Question 1
+-   Lab 3, Question 1
 
 ```{r wd-1-csv}
 library("here")
@@ -30,7 +30,7 @@ hiphop <- read_csv(here("hiphop.csv"))
 
 `xlsx`
 
--   Practice Activity 3, Question 1
+-   Practice Activity 4, Question 1
 
 ```{r wd-1-xlsx}
 library("here")
@@ -45,11 +45,11 @@ military <- read_xlsx(here::here("data",
 
 `txt`
 
--   Practice Activity 2, Step 2
+-   Practice Activity 5.2, Setup
 
 ```{r wd-1-txt}
 library("here")
-read_tsv(here::here("Week 2", "Ages_Data", "ages_tab.txt"))
+message <- read_csv(here::here("data", "scrambled_message.txt"))
 
 ```
 
@@ -166,10 +166,20 @@ hiphop_clean <- hiphop |>
 
 `factor`
 
--   
+-   Lab 3, Question 5
 
 ```{r wd-4-factor}
 
+#Change all colums with datatype character to a factor
+#Remove all NA values in the numPreferredArtists and numOverallArtists columns
+hiphop_clean <- hiphop |> 
+  mutate(
+    across(.cols = c(word, subj, sex, ethnic), .fns = ~as_factor(.x)), 
+    city = replace(city, city == 0, NA),
+    county = replace(county, county == 0, NA)
+  ) 
+
+hiphop_clean
 ```
 
 `date`
@@ -184,56 +194,275 @@ suspects <- suspects |>
 
 **WD-5: I can use mutating joins to combine multiple dataframes.**
 
--   `left_join()`
+`left_join()`
+
+-   Lab 4, Question 5
 
 ```{r wd-5-left}
 
+#Get 5 metro regions with highest total sales of avocados
+  anti_join(x = avocado_clean, y = majorRegions, by = "region") |>
+  anti_join(y = minorRegions, by = "region") |>
+  filter(region != "California", region != "TotalUS") |>
+  group_by(region) |>
+  summarize(AverageVolume = mean(`Total Volume`)) |>
+  slice_max(order_by = AverageVolume, n = 5) |>
+  mutate(region = as.character(region)) |>
+  left_join( y = avocado_clean, by = "region") |>
+  ggplot(mapping = aes(x = `Total Volume`, y = region, fill = region)) +
+    geom_boxplot() + 
+    labs(x = "Total Volume of Avocados Sold", y = "Metro Region" )
 ```
 
--   `right_join()`
+`right_join()`
+
+-   Preview Activity 4, Question 1
 
 ```{r wd-5-right}
 
+prof_info <- tibble(
+  professor = c("Bodwin", 
+                "Glanz", 
+                "Robinson",
+                "Theobold"),
+  undergrad_school = c("Harvard", 
+                       "Cal Poly",
+                       "Winona State University",
+                       "Colorado Mesa University"),
+  grad_school = c("UNC", 
+                  "Boston University", 
+                  "University of Nebraska-Lincoln",
+                  "Montana State University")
+)
+
+prof_course <- tibble(
+  professor = c("Bodwin", "Robinson", "Theobold", "Carlton"),
+  Stat_331 = c(TRUE, TRUE, TRUE, TRUE),
+  Stat_330 = c(FALSE, TRUE, FALSE, FALSE),
+  Stat_431 = c(TRUE, TRUE, TRUE, FALSE)
+)
+
+course_info <- data.frame(
+  course = c("Stat_331", "Stat_330", "Stat_431"),
+  num_sections = c(8, 3, 1)
+)
+
+prof_info <- tibble(
+  professor = c("Bodwin", 
+                "Glanz", 
+                "Robinson",
+                "Theobold"),
+  undergrad_school = c("Harvard", 
+                       "Cal Poly",
+                       "Winona State University",
+                       "Colorado Mesa University"),
+  grad_school = c("UNC", 
+                  "Boston University", 
+                  "University of Nebraska-Lincoln",
+                  "Montana State University")
+)
+
+prof_course <- tibble(
+  professor = c("Bodwin", "Robinson", "Theobold", "Carlton"),
+  Stat_331 = c(TRUE, TRUE, TRUE, TRUE),
+  Stat_330 = c(FALSE, TRUE, FALSE, FALSE),
+  Stat_431 = c(TRUE, TRUE, TRUE, FALSE)
+)
+
+course_info <- data.frame(
+  course = c("Stat_331", "Stat_330", "Stat_431"),
+  num_sections = c(8, 3, 1)
+)
+
+right_join(prof_info, prof_course)
 ```
 
--   `inner_join()`
+`inner_join()`
+
+-   Challenge 4, Working with the CA Data and Plotting Data
 
 ```{r wd-5-inner}
 
+#Filter dataset for the average price and avocados sold each month and year
+avocado_california <- avocado_california |>
+  group_by(Month, Year, region) |>
+  summarize(region,
+            Month,
+            Year,
+            AveragePrice = mean(AveragePrice),
+            AverageTotalVolume = mean(`Total Volume`),
+            AverageSmall = mean(Small_Hass),
+            AverageLarge = mean(Large_Hass),
+            AverageExtraLarge = mean(Extra_Large_Hass)) |>
+  distinct(AveragePrice, .keep_all = TRUE)
+
+#Join avocado data set and housing data set
+avocado_california <- avocado_california |>
+  #full_join(california_housing)
+  inner_join(california_housing)
+
+#Plot data
+avocado_california |>
+  ggplot(mapping = aes(x = AveragePrice, y = `Housing Prices`, color = region))+
+  geom_point() +
+  geom_smooth()
+  
 ```
 
--   `full_join()`
+`full_join()`
+
+-   Challenge 4, Working with the CA Data and Plotting Data
 
 ```{r wd-5-full}
+
+#Filter dataset for the average price and avocados sold each month and year
+avocado_california <- avocado_california |>
+  group_by(Month, Year, region) |>
+  summarize(region,
+            Month,
+            Year,
+            AveragePrice = mean(AveragePrice),
+            AverageTotalVolume = mean(`Total Volume`),
+            AverageSmall = mean(Small_Hass),
+            AverageLarge = mean(Large_Hass),
+            AverageExtraLarge = mean(Extra_Large_Hass)) |>
+  distinct(AveragePrice, .keep_all = TRUE)
+
+#Join avocado data set and housing data set
+avocado_california <- avocado_california |>
+  full_join(california_housing)
+  #inner_join(california_housing)
+
+#Plot data
+avocado_california |>
+  ggplot(mapping = aes(x = AveragePrice, y = `Housing Prices`, color = region))+
+  geom_point() +
+  geom_smooth()
 
 ```
 
 **WD-6: I can use filtering joins to filter rows from a dataframe.**
 
--   `semi_join()`
+`semi_join()`
+
+-   Lab 4, Question 6
 
 ```{r wd-6-semi}
 
+california_regions <- tibble(region = c("LosAngeles",
+                                         "SanDiego", 
+                                         "Sacramento",
+                                         "SanFrancisco"))
+
+avocado_california <- avocado_clean |>
+  semi_join(y = california_regions, by = "region") 
+
+group_by(.data = avocado_california, region, type) |>
+  summarise(Mean = mean(AveragePrice), .groups = 'drop') |>
+  pivot_wider(names_from = type,
+              values_from = Mean) |>
+  mutate(difference = (organic - conventional)) |>
+  arrange(-difference) |>
+  ggplot(mapping = aes(x = region, y = difference, fill = region)) + 
+    geom_bar(stat='identity') + 
+    labs(x = "California Region",
+         y = "Difference of Conventional and Organic Avocado Prices") + 
+    coord_flip() +
+    theme(legend.position = "none")
+
+
+#Reference Link(s):
+  # https://stackoverflow.com/questions/62140483/how-to-interpret-dplyr-message-summarise-regrouping-output-by-x-override
+  # https://stackoverflow.com/questions/61068031/error-stat-count-can-only-have-an-x-or-y     -aesthetic
 ```
 
--   `anti_join()`
+`anti_join()`
+
+-   Lab 4, Question 5
 
 ```{r wd-6-anti}
+
+#Get 5 metro regions with highest total sales of avocados
+  anti_join(x = avocado_clean, y = majorRegions, by = "region") |>
+  anti_join(y = minorRegions, by = "region") |>
+  filter(region != "California", region != "TotalUS") |>
+  group_by(region) |>
+  summarize(AverageVolume = mean(`Total Volume`)) |>
+  slice_max(order_by = AverageVolume, n = 5) |>
+  mutate(region = as.character(region)) |>
+  left_join( y = avocado_clean, by = "region") |>
+  ggplot(mapping = aes(x = `Total Volume`, y = region, fill = region)) +
+    geom_boxplot() + 
+    labs(x = "Total Volume of Avocados Sold", y = "Metro Region" )
 
 ```
 
 **WD-7: I can pivot dataframes from long to wide and visa versa**
 
--   `pivot_longer()`
+`pivot_longer()`
+
+-   Lab 4, Question 7
 
 ```{r wd-7-long}
 
+avocado_california |> 
+  group_by(region, type) |>
+  summarize(Total_Mean = mean(`Total Volume`),
+            Small = mean(Small_Hass),
+            Large = mean(Large_Hass),
+            `Extra Large` = mean(`Extra_Large_Hass`),
+            .groups = 'drop') |>
+  pivot_longer(cols = Small:`Extra Large`, 
+               names_to = "Avocado Size",
+               values_to = "Mean Avocados Sold") |>
+  ggplot(mapping = aes(x = region,
+                       y = `Mean Avocados Sold`,
+                       fill = fct(`Avocado Size`,
+                                     levels = c("Small",
+                                                "Large",
+                                                "Extra Large")))) +
+    geom_bar(stat = "identity", position = "fill") +
+    facet_wrap(~ type) + 
+    labs(x = "Region of CA", 
+         y = "Proportion of Mean Avocados Sold",
+         fill = "Avocado Size") +
+    scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+    scale_fill_brewer(palette = "Paired") 
+
 ```
 
--   `pivot_wider()`
+`pivot_wider()`
+
+-   Lab 4, Question 6
 
 ```{r wd-7-wide}
+california_regions <- tibble(region = c("LosAngeles",
+                                         "SanDiego", 
+                                         "Sacramento",
+                                         "SanFrancisco"))
 
+avocado_california <- avocado_clean |>
+  semi_join(y = california_regions, by = "region") 
+
+group_by(.data = avocado_california, region, type) |>
+  summarise(Mean = mean(AveragePrice), .groups = 'drop') |>
+  pivot_wider(names_from = type,
+              values_from = Mean) |>
+  mutate(difference = (organic - conventional)) |>
+  arrange(-difference) |>
+  ggplot(mapping = aes(x = region, y = difference, fill = region)) + 
+    geom_bar(stat='identity') + 
+    labs(x = "California Region",
+         y = "Difference of Conventional and Organic Avocado Prices") + 
+    coord_flip() +
+    theme(legend.position = "none")
+
+
+#Reference Link(s):
+  # https://stackoverflow.com/questions/62140483/how-to-interpret-dplyr-message-summarise-regrouping-output-by-x-override
+  # https://stackoverflow.com/questions/61068031/error-stat-count-can-only-have-an-x-or-y     -aesthetic
+    
+               
 ```
 
 ## Reproducibility
@@ -244,29 +473,62 @@ I've done this in the following provided assignments:
 
 **R-2: I can write well documented and tidy code.**
 
--   Example 1
+-   Example 1 - Lab 4, Question 4
 
 ```{r r-2-1}
 
+avocado_clean |>
+  select(-year) |>
+  separate_wider_delim(cols = Date, delim = "-", names = c("Year", "Month", "Day")) |> 
+  slice_max(`Total Volume`) |>
+  summarize(Month, `Total Volume`)
 ```
 
--   Example 2
+-   Example 2 - Lab 3, Question 10
 
 ```{r r-2-2}
 
+#Allows for unique data of each individual
+unique_individuals <- hiphop_clean |>
+  distinct(subj, .keep_all = TRUE)
+
+#Plot 1 plots the enthicity of each individual in the data set
+ggplot(data = unique_individuals) +
+  geom_bar(mapping = aes(x = ethnic, fill = ethnic)) +
+  labs(x = "Ethnicities of Individuals", y = "Total Count")
+
+#Plot 2 plots side by side boxplots of the age of individuals besed on their sex
+ggplot(data = unique_individuals, mapping = aes(x = sex, y = age)) +
+  geom_boxplot()
 ```
 
 **R-3: I can write robust programs that are resistant to changes in inputs.**
 
--   Example 1
+-   Example 1 - Lab 4, Question 4
 
 ```{r r-3-1}
 
+avocado_clean |>
+  select(-year) |>
+  separate_wider_delim(cols = Date, delim = "-", names = c("Year", "Month", "Day")) |> 
+  slice_max(`Total Volume`) |>
+  summarize(Month, `Total Volume`)
 ```
 
 -   Example 2
 
 ```{r r-3-2}
+
+california_housing <- read_csv(here("Week 4", "Lab 4", "CA_Housing.csv"))
+
+california_housing <- california_housing |>
+  pivot_longer(cols = LosAngeles:SanFrancisco,
+               names_to = "region",
+               values_to = "Housing Prices") |>
+  mutate(Year = as.character(Year))
+
+#Reference Link(s)
+  #https://www.zillow.com/home-values/9/ca/
 
 ```
 
@@ -274,28 +536,108 @@ I've done this in the following provided assignments:
 
 **DVS-1: I can create visualizations for a *variety* of variable types (e.g., numeric, character, factor, date)**
 
--   numeric variables
+`numeric variables`
+
+-   Challenge 4, Working with the CA Data and Plotting Data
 
 ```{r dvs-1-num}
 
+#Filter dataset for the average price and avocados sold each month and year
+avocado_california <- avocado_california |>
+  group_by(Month, Year, region) |>
+  summarize(region,
+            Month,
+            Year,
+            AveragePrice = mean(AveragePrice),
+            AverageTotalVolume = mean(`Total Volume`),
+            AverageSmall = mean(Small_Hass),
+            AverageLarge = mean(Large_Hass),
+            AverageExtraLarge = mean(Extra_Large_Hass)) |>
+  distinct(AveragePrice, .keep_all = TRUE)
+
+#Join avocado data set and housing data set
+avocado_california <- avocado_california |>
+  #full_join(california_housing)
+  inner_join(california_housing)
+
+#Plot data
+avocado_california |>
+  ggplot(mapping = aes(x = AveragePrice, y = `Housing Prices`, color = region))+
+  geom_point() +
+  geom_smooth()
 ```
 
--   numeric variables and categorical variables
+`numeric variables and categorical variables`
+
+-   Lab 3, Question 10
 
 ```{r dvs-2-num-cat}
 
+#Allows for unique data of each individual
+unique_individuals <- hiphop_clean |>
+  distinct(subj, .keep_all = TRUE)
+
+#Plot 1 plots the enthicity of each individual in the data set
+ggplot(data = unique_individuals) +
+  geom_bar(mapping = aes(x = ethnic, fill = ethnic)) +
+  labs(x = "Ethnicities of Individuals", y = "Total Count")
+
+#Plot 2 plots side by side boxplots of the age of individuals besed on their sex
+ggplot(data = unique_individuals, mapping = aes(x = sex, y = age)) +
+  geom_boxplot()
 ```
 
--   categorical variables
+`categorical variables`
+
+-   Lab 4, Question 7
 
 ```{r dvs-2-cat}
 
+avocado_california |> 
+  group_by(region, type) |>
+  summarize(Total_Mean = mean(`Total Volume`),
+            Small = mean(Small_Hass),
+            Large = mean(Large_Hass),
+            `Extra Large` = mean(`Extra_Large_Hass`),
+            .groups = 'drop') |>
+  pivot_longer(cols = Small:`Extra Large`, 
+               names_to = "Avocado Size",
+               values_to = "Mean Avocados Sold") |>
+  ggplot(mapping = aes(x = region,
+                       y = `Mean Avocados Sold`,
+                       fill = fct(`Avocado Size`,
+                                     levels = c("Small",
+                                                "Large",
+                                                "Extra Large")))) +
+    geom_bar(stat = "identity", position = "fill") +
+    facet_wrap(~ type) + 
+    labs(x = "Region of CA", 
+         y = "Proportion of Mean Avocados Sold",
+         fill = "Avocado Size") +
+    scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+    scale_fill_brewer(palette = "Paired") 
+
+#Reference Link(s):
+  # https://stackoverflow.com/questions/47025828/change-the-order-of-stacked-fill-columns-in-ggplot2
+  # https://stackoverflow.com/questions/72545463/how-to-expand-color-palette-in-ggplot2
 ```
 
--   dates
+`dates`
+
+-   Lab 5, Time-Series, Question 4
 
 ```{r dvs-2-date}
 
+surveys |>
+  group_by(year, genus) |>
+  summarize(Mean_Weight = mean(weight), .groups = 'drop') |>
+  ggplot(mapping = aes(y = Mean_Weight, x = year, color = fct_reorder(genus, -Mean_Weight))) +
+    geom_line() +
+    labs(x = "Year", y = NULL, color = "Genus of Animal",
+         title = "Mean Weights (Grams) for Each Animal's Genus per Year ", 
+         subtitle = "Taken From the 'surveys' Data Set")
+
+#Code revised using provided canvas observations
 ```
 
 **DVS-2: I use plot modifications to make my visualization clear to the reader.**

@@ -283,6 +283,7 @@ right_join(prof_info, prof_course)
 
 ```{r wd-5-inner}
 
+
 #Filter dataset for the average price and avocados sold each month and year
 avocado_california <- avocado_california |>
   group_by(Month, Year, region) |>
@@ -305,8 +306,12 @@ avocado_california <- avocado_california |>
 avocado_california |>
   ggplot(mapping = aes(x = AveragePrice, y = `Housing Prices`, color = region))+
   geom_point() +
-  geom_smooth()
+  geom_smooth() + 
+  labs(x = "Average Price of Avocados",
+       y = "Housing Prices", 
+       color = "California Region")
   
+#Edited from initial submission to have better labeling
 ```
 
 `full_join()`
@@ -337,7 +342,12 @@ avocado_california <- avocado_california |>
 avocado_california |>
   ggplot(mapping = aes(x = AveragePrice, y = `Housing Prices`, color = region))+
   geom_point() +
-  geom_smooth()
+  geom_smooth() + 
+  labs(x = "Average Price of Avocados",
+       y = "Housing Prices", 
+       color = "California Region")
+  
+#Edited from initial submission to have better labeling
 
 ```
 
@@ -515,7 +525,7 @@ avocado_clean |>
   summarize(Month, `Total Volume`)
 ```
 
--   Example 2
+-   Example 2 - Challenge 4, Importing and Cleaning CA Housing Data
 
 ```{r r-3-2}
 
@@ -542,6 +552,7 @@ california_housing <- california_housing |>
 
 ```{r dvs-1-num}
 
+
 #Filter dataset for the average price and avocados sold each month and year
 avocado_california <- avocado_california |>
   group_by(Month, Year, region) |>
@@ -564,7 +575,12 @@ avocado_california <- avocado_california |>
 avocado_california |>
   ggplot(mapping = aes(x = AveragePrice, y = `Housing Prices`, color = region))+
   geom_point() +
-  geom_smooth()
+  geom_smooth() + 
+  labs(x = "Average Price of Avocados",
+       y = "Housing Prices", 
+       color = "California Region")
+  
+#Edited from initial submission to have better labeling
 ```
 
 `numeric variables and categorical variables`
@@ -642,58 +658,185 @@ surveys |>
 
 **DVS-2: I use plot modifications to make my visualization clear to the reader.**
 
--   Example 1
+-   Example 1 - Lab 4, Question 7
 
 ```{r dvs-2-1}
+avocado_california |> 
+  group_by(region, type) |>
+  summarize(Total_Mean = mean(`Total Volume`),
+            Small = mean(Small_Hass),
+            Large = mean(Large_Hass),
+            `Extra Large` = mean(`Extra_Large_Hass`),
+            .groups = 'drop') |>
+  pivot_longer(cols = Small:`Extra Large`, 
+               names_to = "Avocado Size",
+               values_to = "Mean Avocados Sold") |>
+  ggplot(mapping = aes(x = region,
+                       y = `Mean Avocados Sold`,
+                       fill = fct(`Avocado Size`,
+                                     levels = c("Small",
+                                                "Large",
+                                                "Extra Large")))) +
+    geom_bar(stat = "identity", position = "fill") +
+    facet_wrap(~ type) + 
+    labs(x = "Region of CA", 
+         y = "Proportion of Mean Avocados Sold",
+         fill = "Avocado Size") +
+    scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+    scale_fill_brewer(palette = "Paired") 
 
+#Reference Link(s):
+  # https://stackoverflow.com/questions/47025828/change-the-order-of-stacked-fill-columns-in-ggplot2
+  # https://stackoverflow.com/questions/72545463/how-to-expand-color-palette-in-ggplot2
 ```
 
--   Example 2
+-   Example 2 - Lab 5, Time Series Plot, Question 4
 
 ```{r dvs-2-2}
+surveys |>
+  group_by(year, genus) |>
+  summarize(Mean_Weight = mean(weight), .groups = 'drop') |>
+  ggplot(mapping = aes(y = Mean_Weight,
+                       x = year,
+                       color = fct_reorder(genus, -Mean_Weight))) +
+    geom_line() +
+    labs(x = "Year", y = NULL, color = "Genus of Animal",
+         title = "Mean Weights (Grams) for Each Animal's Genus per Year ", 
+         subtitle = "Taken From the 'surveys' Data Set")
 
+#Code revised using provided canvas observations
 ```
 
 **DVS-3: I show creativity in my visualizations**
 
--   Example 1
+-   Example 1 - Challenge 4, Working with the CA Data and Plotting Data
 
 ```{r dvs-3-1}
 
+#Filter dataset for the average price and avocados sold each month and year
+avocado_california <- avocado_california |>
+  group_by(Month, Year, region) |>
+  summarize(region,
+            Month,
+            Year,
+            AveragePrice = mean(AveragePrice),
+            AverageTotalVolume = mean(`Total Volume`),
+            AverageSmall = mean(Small_Hass),
+            AverageLarge = mean(Large_Hass),
+            AverageExtraLarge = mean(Extra_Large_Hass)) |>
+  distinct(AveragePrice, .keep_all = TRUE)
+
+#Join avocado data set and housing data set
+avocado_california <- avocado_california |>
+  #full_join(california_housing)
+  inner_join(california_housing)
+
+#Plot data
+avocado_california |>
+  ggplot(mapping = aes(x = AveragePrice, y = `Housing Prices`, color = region))+
+  geom_point() +
+  geom_smooth() + 
+  labs(x = "Average Price of Avocados",
+       y = "Housing Prices", 
+       color = "California Region")
+  
+#Edited from initial submission to have better labeling
 ```
 
--   Example 2
+-   Example 2 -- Lab 5, Time Series Plot, Question 4
 
 ```{r dvs-3-2}
+surveys |>
+  group_by(year, genus) |>
+  summarize(Mean_Weight = mean(weight), .groups = 'drop') |>
+  ggplot(mapping = aes(y = Mean_Weight,
+                       x = year,
+                       color = fct_reorder(genus, -Mean_Weight))) +
+    geom_line() +
+    labs(x = "Year", y = NULL, color = "Genus of Animal",
+         title = "Mean Weights (Grams) for Each Animal's Genus per Year ", 
+         subtitle = "Taken From the 'surveys' Data Set")
 
+#Code revised using provided canvas observations
 ```
 
 **DVS-4: I can calculate numerical summaries of variables.**
 
--   Example 1
+-   Example 1 - Lab 3, Question 14
 
 ```{r dvs-4-1}
 
+bieberDataset <- hiphop_clean |>
+  distinct(subj, .keep_all = TRUE) |>
+    filter(simple_ethnic == "white",
+           sex == "Male",
+           city >= 10000 & city <= 60000,
+           age >= 17,
+           age <= 23
+           ) |> 
+               select(c(subj, bieber)) |>
+                  slice_max(bieber)
+
+bieberDataset
 ```
 
--   Example 2
+-   Example 2 - Lab 3, Question 11
 
 ```{r dvs-4-2}
 
+filtered <- hiphop_clean |> 
+  filter(age < 20) |> 
+    group_by(word) |>
+      summarize(Average_Familiarity = mean(familiarity))
+          
+slice_max(filtered, Average_Familiarity)
+slice_min(filtered, Average_Familiarity)
 ```
 
 **DVS-5: I can find summaries of variables across multiple groups.**
 
--   Example 1
+-   Example 1 - Lab 4, Question 3
 
 ```{r dvs-5-1}
 
+avocado_major_regions |> 
+  filter(year == 2017, type == "organic") |>
+  summarize(region, `Total Volume`, Small_Hass,  Date) |>
+  slice_max(Small_Hass) 
 ```
 
--   Example 2
+-   Example 2 - Lab 4, Question 7
 
 ```{r dvs-5-2}
 
+avocado_california |> 
+  group_by(region, type) |>
+  summarize(Total_Mean = mean(`Total Volume`),
+            Small = mean(Small_Hass),
+            Large = mean(Large_Hass),
+            `Extra Large` = mean(`Extra_Large_Hass`),
+            .groups = 'drop') |>
+  pivot_longer(cols = Small:`Extra Large`, 
+               names_to = "Avocado Size",
+               values_to = "Mean Avocados Sold") |>
+  ggplot(mapping = aes(x = region,
+                       y = `Mean Avocados Sold`,
+                       fill = fct(`Avocado Size`,
+                                     levels = c("Small",
+                                                "Large",
+                                                "Extra Large")))) +
+    geom_bar(stat = "identity", position = "fill") +
+    facet_wrap(~ type) + 
+    labs(x = "Region of CA", 
+         y = "Proportion of Mean Avocados Sold",
+         fill = "Avocado Size") +
+    scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+    scale_fill_brewer(palette = "Paired") 
+
+#Reference Link(s):
+  # https://stackoverflow.com/questions/47025828/change-the-order-of-stacked-fill-columns-in-ggplot2
+  # https://stackoverflow.com/questions/72545463/how-to-expand-color-palette-in-ggplot2
+  
 ```
 
 **DVS-6: I can create tables which make my summaries clear to the reader.**
@@ -701,13 +844,13 @@ surveys |>
 -   Example 1
 
 ```{r dvs-6-1}
-
+N/A
 ```
 
 -   Example 2
 
 ```{r dvs-6-2}
-
+N/A
 ```
 
 **DVS-7: I show creativity in my tables.**
@@ -715,35 +858,57 @@ surveys |>
 -   Example 1
 
 ```{r dvs-7-1}
-
+N/A
 ```
 
 -   Example 2
 
 ```{r dvs-7-2}
-
+N/A
 ```
 
 ## Program Efficiency
 
 **PE-1: I can write concise code which does not repeat itself.**
 
--   using a single function call
+Using a single function call
+
+-   Lab 3, Question 5
 
 ```{r pe-1-one-call}
 
+hiphop_clean <- hiphop |> 
+  mutate(
+    across(.cols = c(word, subj, sex, ethnic), .fns = ~as_factor(.x)), 
+    city = replace(city, city == 0, NA),
+    county = replace(county, county == 0, NA)
+  ) 
+
+hiphop_clean
 ```
 
--   `across()`
+`across()`
+
+-   Lab 3, Question 5
 
 ```{r pe-1-across}
 
+#Change all colums with datatype character to a factor
+#Remove all NA values in the numPreferredArtists and numOverallArtists columns
+hiphop_clean <- hiphop |> 
+  mutate(
+    across(.cols = c(word, subj, sex, ethnic), .fns = ~as_factor(.x)), 
+    city = replace(city, city == 0, NA),
+    county = replace(county, county == 0, NA)
+  ) 
+
+hiphop_clean
 ```
 
--   `map()` functions
+`map()` functions
 
 ```{r pe-1-map-1}
-
+N/A
 ```
 
 **PE-2: I can write functions to reduce repetition in my code.**
@@ -751,45 +916,127 @@ surveys |>
 -   Example 1
 
 ```{r pe2-1}
-
+N/A
 ```
 
 -   Example 2
 
 ```{r pe2-2}
-
+N/A
 ```
 
-**PE-3:I can use iteration to reduce repetition in my code.**
+**PE-3: I can use iteration to reduce repetition in my code.**
 
--   `across()`
+`across()`
+
+-   Lab 4, Question 2
 
 ```{r pe-3-across}
 
+#Renaming columns that use PLU as their name
+avocado_clean <- avocado |> 
+  rename(Small_Hass = `4046`, 
+         Large_Hass = `4225`,
+         Extra_Large_Hass = `4770`)
+
+#Getting all major regions within the avocado data set
+majorRegions <- tibble(region = c("Midsouth", 
+                                  "Northeast",
+                                  "SouthCentral",
+                                  "Southeast",
+                                  "West")
+                      )
+
+#Getting all minor regions within the avocado data set
+minorRegions <- tibble(region = c("GreatLakes",
+                                  "GrandRapids",
+                                  "NorthernNewEngland",
+                                  "Plains")
+                      )
+
+#Separating data into two tibbles based on major region and state
+avocado_major_regions <- semi_join(x = avocado_clean, y = majorRegions, by = "region")
+avocado_states <- anti_join(x = avocado_clean, y = majorRegions, by = "region")
+
+#Making type and region columns as factors
+avocado_clean <- avocado_clean |>
+  mutate(
+    across(.cols = c(type, region), .fns = ~as.factor(.x))
+  )
+
+#Making type and region columns as factors
+avocado_states <- avocado_states |>
+  mutate(
+    across(.cols = c(type, region), .fns = ~as.factor(.x))
+  )
+
+#Making type and region columns as factors
+avocado_major_regions <- avocado_major_regions |>
+  mutate(
+    across(.cols = c(type, region), .fns = ~as.factor(.x))
+  )
+                               
+
 ```
 
--   `map()` functions (Provide 2 Examples)
+`map()` functions (Provide 2 Examples)
+
+-   Example 1 -
 
 ```{r pe-3-map-1}
-
+N/A
 ```
 
-```{r pe-3-map-2}
+-   Example 2 -
 
+```{r pe-3-map-2}
+N/A
 ```
 
 **PE-4: I can use modern tools when carrying out my analysis.**
 
--   Example 1
+-   Example 1 - Lab 4, Question 7
 
 ```{r pe-4-1}
 
+avocado_california |> 
+  group_by(region, type) |>
+  summarize(Total_Mean = mean(`Total Volume`),
+            Small = mean(Small_Hass),
+            Large = mean(Large_Hass),
+            `Extra Large` = mean(`Extra_Large_Hass`),
+            .groups = 'drop') |>
+  pivot_longer(cols = Small:`Extra Large`, 
+               names_to = "Avocado Size",
+               values_to = "Mean Avocados Sold") |>
+  ggplot(mapping = aes(x = region,
+                       y = `Mean Avocados Sold`,
+                       fill = fct(`Avocado Size`,
+                                  levels = c("Small",
+                                             "Large",
+                                             "Extra Large")))) +
+    geom_bar(stat = "identity", position = "fill") +
+    facet_wrap(~ type) + 
+    labs(x = "Region of CA", 
+         y = "Proportion of Mean Avocados Sold",
+         fill = "Avocado Size") +
+    scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+    scale_fill_brewer(palette = "Paired") 
+
+#Reference Link(s):
+  # https://stackoverflow.com/questions/47025828/change-the-order-of-stacked-fill-columns-in-ggplot2
+  # https://stackoverflow.com/questions/72545463/how-to-expand-color-palette-in-ggplot2
+  
 ```
 
--   Example 2
+-   Example 2 - Lab 4, Question 3
 
 ```{r pe-4-2}
 
+avocado_major_regions |> 
+  filter(year == 2017, type == "organic") |>
+  summarize(region, `Total Volume`, Small_Hass,  Date) |>
+  slice_max(Small_Hass) 
 ```
 
 ## Data Simulation & Modeling
@@ -799,13 +1046,13 @@ surveys |>
 -   Example 1
 
 ```{r dsm-1-1}
-
+N/A
 ```
 
 -   Example 2
 
 ```{r dsm-1-2}
-
+N/A
 ```
 
 **DSM-2: I can fit a linear regression and extract necessary summary measures.**
@@ -813,23 +1060,33 @@ surveys |>
 -   Example 1
 
 ```{r dsm-2-1}
-
+N/A
 ```
 
 -   Example 2
 
 ```{r dsm-2-2}
-
+N/A
 ```
 
 ## Revising My Thinking
 
 <!-- How did you revise your thinking throughout the course? How did you revise your thinking on the code examples you have provided in your portfolio? -->
 
+-   I take any critiques and mistakes I get from the labs and challenges to heart. I try my best to redo everything that I can so that I fully understand what I did wrong and prevent those mistakes for future assignments and projects in R. I also read all required readings to best understand the topics each week and am prepared for the explanations of said topics during the first hour of each class period. By doing this, I believe that I am improving and meeting the learning topic more often for each assignment. This is apparent above where I listed many questions from labs and challenges 3, 4, and 5 as I am making my answers more organized and more concise through my code.
+
 ## Extending My Thinking
 
 <!-- How did you extended your thinking throughout the course? How did you extend your thinking on the code examples you have provided in your portfolio? -->
 
+-   When I do not understand a particular topic, I search it up on Google and try to find how it can be applied. If I don't understand a certain function, I will typically look it up in documentation and see what I can learn from there and then use Google if I still don't understand it.
+
+-   When I get errors on my code and cannot easily fix them, I look on Stack Overflow or some other website to see if someone else has had the same issue as me in the past. If I can find a thread that can solve my issue, I will always link it as a comment in the respective question's code chunk.
+
 ## Peer Support & Collaboration
 
 <!-- Include an image of feedback you gave that you are proud of (either in a peer review or in Discord) -->
+
+(Im guido on Discord by the way)
+
+![](supporting_artifacts/Screenshot%202023-02-19%20at%2011.12.48%20AM.png)

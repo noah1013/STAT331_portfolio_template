@@ -1,0 +1,105 @@
+---
+title: "Challenge 4"
+author: "Noah Tobinsky"
+format: 
+  html:
+    self-contained: true
+    code-tools: true
+    code-fold: true
+execute: 
+  echo: true
+  error: true
+  message: false
+  warning: false
+editor: visual
+---
+
+## Setup
+
+```{r}
+library("tidyverse")
+library("here")
+
+avocado <- read_csv(here("Week 4", "Lab 4", "avocado.csv"))
+```
+
+## Cleanup
+
+```{r}
+avocado_clean <- avocado |> 
+  rename(Small_Hass = `4046`, 
+         Large_Hass = `4225`,
+         Extra_Large_Hass = `4770`)
+
+avocado_clean <- avocado_clean |>
+  mutate(
+    across(.cols = c(type, region), .fns = ~as.factor(.x))
+  )
+```
+
+## Getting Avocados in California Regions
+
+```{r}
+california_regions <- tibble(region = c("LosAngeles",
+                                         "SanDiego", 
+                                         "Sacramento",
+                                         "SanFrancisco"))
+
+avocado_california <- avocado_clean |>
+  semi_join(y = california_regions, by = "region") |>
+  select(-year) |>
+  separate_wider_delim(cols = Date, delim = "-", names = c("Year", "Month", "Day"))
+```
+
+## Importing and Cleaning CA Housing Data
+
+```{r}
+california_housing <- read_csv(here("Week 4", "Lab 4", "CA_Housing.csv"))
+
+california_housing <- california_housing |>
+  pivot_longer(cols = LosAngeles:SanFrancisco,
+               names_to = "region",
+               values_to = "Housing Prices") |>
+  mutate(Year = as.character(Year))
+
+#Reference Link(s)
+  #https://www.zillow.com/home-values/9/ca/
+```
+
+## Working With CA Data
+
+```{r}
+
+#Filter dataset for the average price and avocados sold each month and year
+avocado_california <- avocado_california |>
+  group_by(Month, Year, region) |>
+  summarize(region,
+            Month,
+            Year,
+            AveragePrice = mean(AveragePrice),
+            AverageTotalVolume = mean(`Total Volume`),
+            AverageSmall = mean(Small_Hass),
+            AverageLarge = mean(Large_Hass),
+            AverageExtraLarge = mean(Extra_Large_Hass)) |>
+  distinct(AveragePrice, .keep_all = TRUE)
+
+#Join avocado data set and housing data set
+avocado_california <- avocado_california |>
+  #full_join(california_housing)
+  inner_join(california_housing)
+
+#Plot data
+avocado_california |>
+  ggplot(mapping = aes(x = AveragePrice, y = `Housing Prices`, color = region))+
+  geom_point() +
+  geom_smooth() + 
+  labs(x = "Average Price of Avocados",
+       y = "Housing Prices", 
+       color = "California Region")
+  
+#Edited from initial submission to have better labeling
+```
+
+-   Through the shape of the data, there is **no correlation between the average price of avocados and housing prices in each region**. While there is an initial trend of increased housing and avocado prices in San Francisco, this can be attributed to the extreme increase in housing prices rather than the increase in avocado prices.
+
+-   Therefore, the reason that Milennials can't afford houses is NOT avocados and it must be something else.

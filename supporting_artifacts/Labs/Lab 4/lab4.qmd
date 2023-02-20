@@ -1,0 +1,191 @@
+---
+title: "Lab 4"
+author: "Noah Tobinsky"
+format: 
+  html:
+    self-contained: true
+    code-tools: true
+    code-fold: true
+execute: 
+  echo: true
+  error: true
+  message: false
+  warning: false
+editor: visual
+---
+
+## Question 0 - Setup
+
+```{r}
+library("tidyverse")
+library("here")
+
+avocado <- read_csv(here("Week 4", "Lab 4", "avocado.csv"))
+```
+
+## Question 1 - Describe the data set
+
+-   The **avocado** data set contains data of the average price of avocados sold based in a particular region and on a given date. There are three avocado types provided based on their PLU: 4046, 4225, and 4770. The data set was compiled from data on the Hass Avocado Board website. The data comes directly from cash registers based on sales of the three Hass Avocado varieties. The avocados are labeled either organic or conventional (non-organic).
+
+## Question 2 - Cleaning the data
+
+```{r}
+
+#Renaming columns that use PLU as their name
+avocado_clean <- avocado |> 
+  rename(Small_Hass = `4046`, 
+         Large_Hass = `4225`,
+         Extra_Large_Hass = `4770`)
+
+#Getting all major regions within the avocado data set
+majorRegions <- tibble(region = c("Midsouth", 
+                                  "Northeast",
+                                  "SouthCentral",
+                                  "Southeast",
+                                  "West")
+                       )
+
+#Getting all minor regions within the avocado data set
+minorRegions <- tibble(region = c("GreatLakes",
+                                  "GrandRapids",
+                                  "NorthernNewEngland",
+                                  "Plains")
+                       )
+
+#Separating data into two tibbles based on major region and state
+avocado_major_regions <- semi_join(x = avocado_clean, y = majorRegions, by = "region")
+avocado_states <- anti_join(x = avocado_clean, y = majorRegions, by = "region")
+
+#Making type and region columns as factors
+avocado_clean <- avocado_clean |>
+  mutate(
+    across(.cols = c(type, region), .fns = ~as.factor(.x))
+  )
+
+#Making type and region columns as factors
+avocado_states <- avocado_states |>
+  mutate(
+    across(.cols = c(type, region), .fns = ~as.factor(.x))
+  )
+
+#Making type and region columns as factors
+avocado_major_regions <- avocado_major_regions |>
+  mutate(
+    across(.cols = c(type, region), .fns = ~as.factor(.x))
+  )
+                               
+
+```
+
+## Question 3 - Most Organic Small Hass Avocados
+
+```{r}
+
+avocado_major_regions |> 
+  filter(year == 2017, type == "organic") |>
+  summarize(region, `Total Volume`, Small_Hass,  Date) |>
+  slice_max(Small_Hass) 
+  
+```
+
+-   The **Northeast** region sold the most organic small Hass avocados in 2017.
+
+## Question 4 - Month with Highest Volume of Avocado Sales
+
+```{r}
+
+avocado_clean |>
+  select(-year) |>
+  separate_wider_delim(cols = Date, delim = "-", names = c("Year", "Month", "Day")) |> 
+  slice_max(`Total Volume`) |>
+  summarize(Month, `Total Volume`)
+```
+
+-   The month with the highest volume of avocado sales is **February**
+
+## Question 5 - Metro Areas Sold Most Avocados
+
+```{r}
+
+#Get 5 metro regions with highest total sales of avocados
+  anti_join(x = avocado_clean, y = majorRegions, by = "region") |>
+  anti_join(y = minorRegions, by = "region") |>
+  filter(region != "California", region != "TotalUS") |>
+  group_by(region) |>
+  summarize(AverageVolume = mean(`Total Volume`)) |>
+  slice_max(order_by = AverageVolume, n = 5) |>
+  mutate(region = as.character(region)) |>
+  left_join( y = avocado_clean, by = "region") |>
+  ggplot(mapping = aes(x = `Total Volume`, y = region, fill = region)) +
+    geom_boxplot() + 
+    labs(x = "Total Volume of Avocados Sold", y = "Metro Region" )
+
+```
+
+## Question 6 - Organic vs Conventional
+
+```{r}
+
+california_regions <- tibble(region = c("LosAngeles",
+                                         "SanDiego", 
+                                         "Sacramento",
+                                         "SanFrancisco"))
+
+avocado_california <- avocado_clean |>
+  semi_join(y = california_regions, by = "region") 
+
+group_by(.data = avocado_california, region, type) |>
+  summarise(Mean = mean(AveragePrice), .groups = 'drop') |>
+  pivot_wider(names_from = type,
+              values_from = Mean) |>
+  mutate(difference = (organic - conventional)) |>
+  arrange(-difference) |>
+  ggplot(mapping = aes(x = region, y = difference, fill = region)) + 
+    geom_bar(stat='identity') + 
+    labs(x = "California Region",
+         y = "Difference of Conventional and Organic Avocado Prices") + 
+    coord_flip() +
+    theme(legend.position = "none")
+
+
+#Reference Link(s):
+  # https://stackoverflow.com/questions/62140483/how-to-interpret-dplyr-message-summarise-regrouping-output-by-x-override
+  # https://stackoverflow.com/questions/61068031/error-stat-count-can-only-have-an-x-or-y     -aesthetic
+    
+               
+```
+
+## Question 7 - Replicate the Plot
+
+```{r}
+avocado_california |> 
+  group_by(region, type) |>
+  summarize(Total_Mean = mean(`Total Volume`),
+            Small = mean(Small_Hass),
+            Large = mean(Large_Hass),
+            `Extra Large` = mean(`Extra_Large_Hass`),
+            .groups = 'drop') |>
+  pivot_longer(cols = Small:`Extra Large`, 
+               names_to = "Avocado Size",
+               values_to = "Mean Avocados Sold") |>
+  ggplot(mapping = aes(x = region,
+                       y = `Mean Avocados Sold`,
+                       fill = fct(`Avocado Size`,
+                                     levels = c("Small",
+                                                "Large",
+                                                "Extra Large")))) +
+    geom_bar(stat = "identity", position = "fill") +
+    facet_wrap(~ type) + 
+    labs(x = "Region of CA", 
+         y = "Proportion of Mean Avocados Sold",
+         fill = "Avocado Size") +
+    scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+    scale_fill_brewer(palette = "Paired") 
+
+#Reference Link(s):
+  # https://stackoverflow.com/questions/47025828/change-the-order-of-stacked-fill-columns-in-ggplot2
+  # https://stackoverflow.com/questions/72545463/how-to-expand-color-palette-in-ggplot2
+  
+```
+
+\

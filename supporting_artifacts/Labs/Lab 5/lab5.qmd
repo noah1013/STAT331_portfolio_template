@@ -1,0 +1,177 @@
+---
+title: "Lab 5"
+author: "Noah Tobinsky"
+format: 
+  html:
+    self-contained: true
+    code-tools: true
+    code-fold: true
+execute: 
+  echo: true
+  error: true
+  message: false
+  warning: false
+editor: visual
+---
+
+# Set-up
+
+In the code chunk below load in the packages necessary for your analysis. You should only need the tidyverse and here packages for this analysis, unless you decide to use additional resources.
+
+```{r setup}
+library(tidyverse)
+library(here)
+```
+
+# [Revisiting Lab 2]{.underline}
+
+## Importing Plot
+
+```{r}
+surveys <- read_csv(here("Week 5", "Lab 5", "surveys.csv"))
+
+ggplot(data = surveys, mapping = aes(x = weight, 
+                                     y = species)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(color = "darkseagreen", alpha = 0.06) + 
+  labs(x = "Weight of Animal (grams)", y = "Species of Animal")
+```
+
+## Question 1 - Reorder Species
+
+```{r}
+ggplot(data = surveys, mapping = aes(x = weight, 
+                                     y = fct_reorder(species, weight))) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(color = "darkseagreen", alpha = 0.06) + 
+  labs(x = "Weight of Animal (grams)", y = "Species of Animal")
+```
+
+## Question 2 - Move Y-axis Label
+
+```{r}
+ggplot(data = surveys, mapping = aes(x = weight, 
+                                     y = fct_reorder(species, weight))) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(color = "darkseagreen", alpha = 0.06) + 
+  labs(x = "Weight of Animal (grams)",
+       y = NULL, title = "Weight of Various Species of Animals")
+
+```
+
+# [Time-Series Plot]{.underline}
+
+## Question 1 - Varying Weights for Each Genus
+
+```{r}
+
+surveys |>
+  ggplot(mapping = aes(x = year, y = weight, color = genus)) +
+    geom_line() + 
+    labs(x = "Year", y = "Weight of Animal (grams)", color = "Genus of Animal")
+  
+  
+```
+
+## Question 2 - Mean Weights for Each Genus for Each Year
+
+```{r}
+surveys |>
+  group_by(year, genus) |>
+  summarize(Mean_Weight = mean(weight), .groups = 'drop') |>
+  ggplot(mapping = aes(y = Mean_Weight, x = year, color = genus)) +
+    geom_line() +
+    labs(x = "Year", y = "Mean Weight of Animal (grams)")
+    
+
+
+```
+
+## Question 3 - Reorder
+
+```{r}
+surveys |>
+  group_by(year, genus) |>
+  summarize(Mean_Weight = mean(weight), .groups = 'drop') |>
+  ggplot(mapping = aes(y = Mean_Weight, x = year, color = fct_reorder(genus, -Mean_Weight))) +
+    geom_line() +
+    labs(x = "Year", y = "Mean Weight of Animal (grams)")
+  
+    
+
+```
+
+## Question 4 - New title
+
+```{r}
+surveys |>
+  group_by(year, genus) |>
+  summarize(Mean_Weight = mean(weight), .groups = 'drop') |>
+  ggplot(mapping = aes(y = Mean_Weight, x = year, color = fct_reorder(genus, -Mean_Weight))) +
+    geom_line() +
+    labs(x = "Year", y = NULL, color = "Genus of Animal",
+         title = "Mean Weights (Grams) for Each Animal's Genus per Year ", 
+         subtitle = "Taken From the 'surveys' Data Set")
+
+#Code revised using provided canvas observations
+```
+
+# [Captures over the Week]{.underline}
+
+## Question 1 - Number of Rodents Captured Per Week
+
+```{r}
+surveys |>
+  group_by(day_of_week) |>
+  filter(!(is.na(day_of_week))) |>
+  ggplot(mapping = aes(x = day_of_week, fill = day_of_week)) + 
+  geom_bar() + 
+    labs(x = "Day of the Week", y = "Count") 
+
+
+```
+
+## Question 2 - Change order of Day of Week
+
+```{r}
+#ordered(c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"))
+
+surveys <- surveys |> 
+  mutate(day_of_week = fct_relevel(day_of_week,
+                                   "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"))
+  
+surveys |>
+  group_by(day_of_week) |>
+  filter(!(is.na(day_of_week))) |>
+  ggplot(mapping = aes(x = day_of_week,
+                       fill = day_of_week)) + 
+  geom_bar() + 
+  labs(x = "Day of the Week", y = "Count", fill = "Day of Week") 
+```
+
+## Question 3 - Collapse Weekdays and Weekends
+
+```{r}
+
+surveys <- surveys |>
+  mutate(
+    day_of_week = fct_recode(day_of_week, 
+                             "Weekday" = "Mon",
+                             "Weekday" = "Tue",
+                             "Weekday" = "Wed",
+                             "Weekday" = "Thu",
+                             "Weekday" = "Fri",
+                             "Weekend" = "Sat",
+                             "Weekend" = "Sun")
+  )
+  
+  
+surveys |>
+  group_by(day_of_week) |>
+  filter(!(is.na(day_of_week))) |>
+  ggplot(mapping = aes(x = day_of_week,
+                       fill = day_of_week)) + 
+  geom_bar() + 
+  labs(x = "Type of Day", y = "Count", fill = "Type of Day") 
+
+```

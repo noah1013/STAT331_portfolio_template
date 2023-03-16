@@ -118,7 +118,7 @@ avocado_clean |>
   left_join( y = avocado_clean, by = "region") |>
   ggplot(mapping = aes(x = `Total Volume`, y = region, fill = region)) +
     geom_boxplot() + 
-    labs(x = "Total Volume of Avocados Sold", y = "Metro Region" )
+    labs(x = "Total Volume of Avocados Sold", y = "Metro Region")
 
 ```
 

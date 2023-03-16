@@ -11,7 +11,9 @@ execute:
   echo: true
 ---
 
-[**My Grade:**]{.underline} I believe my grade equivalent to course work evidenced below to be an \_\_.
+NEW ONES - Lab 7, Lab 8, Lab 9, PA 9.1/9.2
+
+[**My Grade:**]{.underline} I believe my grade equivalent to course work evidenced below to be an **A-**.
 
 [**Learning Objective Evidence:**]{.underline} In the code chunks below, provide code from a Lab or Challenge assignment where you believe you have demonstrated proficiency with the specified learning target. Be sure to specify **where** the code came from (e.g., Lab 4 Question 2).
 
@@ -61,9 +63,6 @@ message <- read_csv(here::here("data", "scrambled_message.txt"))
 hiphop_demographic <- hiphop_clean |> 
   distinct(subj, .keep_all = TRUE) |>
     select(sex, age, ethnic)
-      
-summary(hiphop_demographic)
-
 ```
 
 **WD-3: I can filter rows from a dataframe for a *variety* of data types (e.g., numeric, integer, character, factor, date).**
@@ -87,19 +86,12 @@ bieberDataset <- hiphop_clean |>
 
 `character -- specifically a string`
 
--   Lab 3, Question 14
+-   Lab/ Challenge 9, Question 2
 
 ```{r wd-3-string}
-bieberDataset <- hiphop_clean |>
-  distinct(subj, .keep_all = TRUE) |>
-    filter(simple_ethnic == "white",
-           sex == "Male",
-           city >= 10000 & city <= 60000,
-           age >= 17,
-           age <= 23
-           ) |> 
-               select(c(subj, bieber)) |>
-                  slice_max(bieber)
+allison_f <- stateNames |>
+  filter(Name == "Allison",
+         sex == "F")
 ```
 
 `factor`
@@ -130,14 +122,6 @@ suspects <- suspects |>
 -   Lab 4, Question 6
 
 ```{r wd-4-numeric}
-california_regions <- tibble(region = c("LosAngeles",
-                                         "SanDiego", 
-                                         "Sacramento",
-                                         "SanFrancisco"))
-
-avocado_california <- avocado_clean |>
-  semi_join(y = california_regions, by = "region") 
-
 group_by(.data = avocado_california, region, type) |>
   summarise(Mean = mean(AveragePrice), .groups = 'drop') |>
   pivot_wider(names_from = type,
@@ -148,20 +132,24 @@ group_by(.data = avocado_california, region, type) |>
     geom_bar(stat='identity') + 
     labs(x = "California Region",
          y = "Difference of Conventional and Organic Avocado Prices") + 
-    coord_flip()
+    coord_flip() +
+    theme(legend.position = "none")
 ```
 
 `character -- specifically a string`
 
--   Lab 3, Question 5
+-   Lab/ Challenge 8, make_phrase() - Test Your Function
 
 ```{r wd-4-string}
-hiphop_clean <- hiphop |> 
-  mutate(
-    across(.cols = c(word, subj, sex, ethnic), .fns = ~as_factor(.x)), 
-    city = replace(city, city == 0, NA),
-    county = replace(county, county == 0, NA)
-  ) 
+xmas2 <- xmas %>%
+  mutate(Full.Phrase = pmap_chr(.l = list(Day,
+                                          Day.in.Words,
+                                          Gift.Item,
+                                          Verb, 
+                                          Adjective,
+                                          Location),
+                                .f = make_phrase)
+         )
 ```
 
 `factor`
@@ -196,22 +184,34 @@ suspects <- suspects |>
 
 `left_join()`
 
--   Lab 4, Question 5
+-   Preview Activity 4, Question 1
 
 ```{r wd-5-left}
 
-#Get 5 metro regions with highest total sales of avocados
-  anti_join(x = avocado_clean, y = majorRegions, by = "region") |>
-  anti_join(y = minorRegions, by = "region") |>
-  filter(region != "California", region != "TotalUS") |>
-  group_by(region) |>
-  summarize(AverageVolume = mean(`Total Volume`)) |>
-  slice_max(order_by = AverageVolume, n = 5) |>
-  mutate(region = as.character(region)) |>
-  left_join( y = avocado_clean, by = "region") |>
-  ggplot(mapping = aes(x = `Total Volume`, y = region, fill = region)) +
-    geom_boxplot() + 
-    labs(x = "Total Volume of Avocados Sold", y = "Metro Region" )
+#Edited to add correct left join functionality
+prof_info <- tibble(
+  professor = c("Bodwin", 
+                "Glanz", 
+                "Robinson",
+                "Theobold"),
+  undergrad_school = c("Harvard", 
+                       "Cal Poly",
+                       "Winona State University",
+                       "Colorado Mesa University"),
+  grad_school = c("UNC", 
+                  "Boston University", 
+                  "University of Nebraska-Lincoln",
+                  "Montana State University")
+)
+
+prof_course <- tibble(
+  professor = c("Bodwin", "Robinson", "Theobold", "Carlton"),
+  Stat_331 = c(TRUE, TRUE, TRUE, TRUE),
+  Stat_330 = c(FALSE, TRUE, FALSE, FALSE),
+  Stat_431 = c(TRUE, TRUE, TRUE, FALSE)
+)
+
+left_join(prof_course, prof_info)
 ```
 
 `right_join()`
@@ -242,38 +242,6 @@ prof_course <- tibble(
   Stat_431 = c(TRUE, TRUE, TRUE, FALSE)
 )
 
-course_info <- data.frame(
-  course = c("Stat_331", "Stat_330", "Stat_431"),
-  num_sections = c(8, 3, 1)
-)
-
-prof_info <- tibble(
-  professor = c("Bodwin", 
-                "Glanz", 
-                "Robinson",
-                "Theobold"),
-  undergrad_school = c("Harvard", 
-                       "Cal Poly",
-                       "Winona State University",
-                       "Colorado Mesa University"),
-  grad_school = c("UNC", 
-                  "Boston University", 
-                  "University of Nebraska-Lincoln",
-                  "Montana State University")
-)
-
-prof_course <- tibble(
-  professor = c("Bodwin", "Robinson", "Theobold", "Carlton"),
-  Stat_331 = c(TRUE, TRUE, TRUE, TRUE),
-  Stat_330 = c(FALSE, TRUE, FALSE, FALSE),
-  Stat_431 = c(TRUE, TRUE, TRUE, FALSE)
-)
-
-course_info <- data.frame(
-  course = c("Stat_331", "Stat_330", "Stat_431"),
-  num_sections = c(8, 3, 1)
-)
-
 right_join(prof_info, prof_course)
 ```
 
@@ -301,15 +269,6 @@ avocado_california <- avocado_california |>
 avocado_california <- avocado_california |>
   #full_join(california_housing)
   inner_join(california_housing)
-
-#Plot data
-avocado_california |>
-  ggplot(mapping = aes(x = AveragePrice, y = `Housing Prices`, color = region))+
-  geom_point() +
-  geom_smooth() + 
-  labs(x = "Average Price of Avocados",
-       y = "Housing Prices", 
-       color = "California Region")
   
 #Edited from initial submission to have better labeling
 ```
@@ -337,18 +296,8 @@ avocado_california <- avocado_california |>
 avocado_california <- avocado_california |>
   full_join(california_housing)
   #inner_join(california_housing)
-
-#Plot data
-avocado_california |>
-  ggplot(mapping = aes(x = AveragePrice, y = `Housing Prices`, color = region))+
-  geom_point() +
-  geom_smooth() + 
-  labs(x = "Average Price of Avocados",
-       y = "Housing Prices", 
-       color = "California Region")
   
 #Edited from initial submission to have better labeling
-
 ```
 
 **WD-6: I can use filtering joins to filter rows from a dataframe.**
@@ -366,20 +315,6 @@ california_regions <- tibble(region = c("LosAngeles",
 
 avocado_california <- avocado_clean |>
   semi_join(y = california_regions, by = "region") 
-
-group_by(.data = avocado_california, region, type) |>
-  summarise(Mean = mean(AveragePrice), .groups = 'drop') |>
-  pivot_wider(names_from = type,
-              values_from = Mean) |>
-  mutate(difference = (organic - conventional)) |>
-  arrange(-difference) |>
-  ggplot(mapping = aes(x = region, y = difference, fill = region)) + 
-    geom_bar(stat='identity') + 
-    labs(x = "California Region",
-         y = "Difference of Conventional and Organic Avocado Prices") + 
-    coord_flip() +
-    theme(legend.position = "none")
-
 
 #Reference Link(s):
   # https://stackoverflow.com/questions/62140483/how-to-interpret-dplyr-message-summarise-regrouping-output-by-x-override
@@ -403,7 +338,7 @@ group_by(.data = avocado_california, region, type) |>
   left_join( y = avocado_clean, by = "region") |>
   ggplot(mapping = aes(x = `Total Volume`, y = region, fill = region)) +
     geom_boxplot() + 
-    labs(x = "Total Volume of Avocados Sold", y = "Metro Region" )
+    labs(x = "Total Volume of Avocados Sold", y = "Metro Region")
 
 ```
 
@@ -446,13 +381,6 @@ avocado_california |>
 -   Lab 4, Question 6
 
 ```{r wd-7-wide}
-california_regions <- tibble(region = c("LosAngeles",
-                                         "SanDiego", 
-                                         "Sacramento",
-                                         "SanFrancisco"))
-
-avocado_california <- avocado_clean |>
-  semi_join(y = california_regions, by = "region") 
 
 group_by(.data = avocado_california, region, type) |>
   summarise(Mean = mean(AveragePrice), .groups = 'drop') |>
@@ -471,8 +399,6 @@ group_by(.data = avocado_california, region, type) |>
 #Reference Link(s):
   # https://stackoverflow.com/questions/62140483/how-to-interpret-dplyr-message-summarise-regrouping-output-by-x-override
   # https://stackoverflow.com/questions/61068031/error-stat-count-can-only-have-an-x-or-y     -aesthetic
-    
-               
 ```
 
 ## Reproducibility
@@ -480,6 +406,10 @@ group_by(.data = avocado_california, region, type) |>
 **R-1: I can create professional looking, reproducible analyses using RStudio projects, Quarto documents, and the here package.**
 
 I've done this in the following provided assignments:
+
+-   **Lab/ Challenge 8** - I imported a csv file through dropbox and used the rest of the lab to manipulate and view data within the data set. I also was able to create functions and utilized iteration to mutate and create new data across the data set
+
+-   **Lab/ Challenge 9** - I imported a data set from a csv file and filtered the data set for two separate scenarios. Using the data, I also created a linear model and obtained the regression line for said model. I also used the data to create organized tables to view the filtered data from.
 
 **R-2: I can write well documented and tidy code.**
 
@@ -548,39 +478,16 @@ california_housing <- california_housing |>
 
 `numeric variables`
 
--   Challenge 4, Working with the CA Data and Plotting Data
+-   Lab/Challenge 9, Question 8
 
 ```{r dvs-1-num}
 
-
-#Filter dataset for the average price and avocados sold each month and year
-avocado_california <- avocado_california |>
-  group_by(Month, Year, region) |>
-  summarize(region,
-            Month,
-            Year,
-            AveragePrice = mean(AveragePrice),
-            AverageTotalVolume = mean(`Total Volume`),
-            AverageSmall = mean(Small_Hass),
-            AverageLarge = mean(Large_Hass),
-            AverageExtraLarge = mean(Extra_Large_Hass)) |>
-  distinct(AveragePrice, .keep_all = TRUE)
-
-#Join avocado data set and housing data set
-avocado_california <- avocado_california |>
-  #full_join(california_housing)
-  inner_join(california_housing)
-
-#Plot data
-avocado_california |>
-  ggplot(mapping = aes(x = AveragePrice, y = `Housing Prices`, color = region))+
-  geom_point() +
-  geom_smooth() + 
-  labs(x = "Average Price of Avocados",
-       y = "Housing Prices", 
-       color = "California Region")
-  
-#Edited from initial submission to have better labeling
+allens |>
+  group_by(Year, Name) |>
+  summarize(`Births per Year` = sum(Count), 
+            .groups = 'drop') |>
+  ggplot(mapping = aes(x = Year, y = `Births per Year`, color = Name)) +
+    geom_line() 
 ```
 
 `numeric variables and categorical variables`
@@ -709,38 +616,35 @@ surveys |>
 
 **DVS-3: I show creativity in my visualizations**
 
--   Example 1 - Challenge 4, Working with the CA Data and Plotting Data
+-   Example 1 - Lab 7, Part 1, Question 2
 
 ```{r dvs-3-1}
 
-#Filter dataset for the average price and avocados sold each month and year
-avocado_california <- avocado_california |>
-  group_by(Month, Year, region) |>
-  summarize(region,
-            Month,
-            Year,
-            AveragePrice = mean(AveragePrice),
-            AverageTotalVolume = mean(`Total Volume`),
-            AverageSmall = mean(Small_Hass),
-            AverageLarge = mean(Large_Hass),
-            AverageExtraLarge = mean(Extra_Large_Hass)) |>
-  distinct(AveragePrice, .keep_all = TRUE)
+BlackfootFish <- BlackfootFish |>
+  mutate(
+      trip = fct_recode(as.factor(trip), 
+                               "Trip 1" = "1",
+                               "Trip 2" = "2")
+  )
 
-#Join avocado data set and housing data set
-avocado_california <- avocado_california |>
-  #full_join(california_housing)
-  inner_join(california_housing)
-
-#Plot data
-avocado_california |>
-  ggplot(mapping = aes(x = AveragePrice, y = `Housing Prices`, color = region))+
-  geom_point() +
-  geom_smooth() + 
-  labs(x = "Average Price of Avocados",
-       y = "Housing Prices", 
-       color = "California Region")
-  
-#Edited from initial submission to have better labeling
+BlackfootFish |>
+  group_by(year, trip, section) |>
+  select(
+    where(~ sum(is.na(.x)) > 0)
+  ) |>
+  summarize(
+    across(
+      .cols = everything(),
+      ~ sum(is.na(.x))
+    ), 
+    .groups = 'drop'
+  ) |>
+  ggplot(mapping = aes(x = year, y = weight, color = section)) +
+  geom_point() + 
+  geom_segment(aes(yend = 0, xend = year)) +
+  facet_wrap(trip ~ section) +
+  labs(x = "Year", y = "Weight of Fish") +
+  theme(legend.position="none")
 ```
 
 -   Example 2 -- Lab 5, Time Series Plot, Question 4
@@ -762,22 +666,20 @@ surveys |>
 
 **DVS-4: I can calculate numerical summaries of variables.**
 
--   Example 1 - Lab 3, Question 14
+-   Example 1 - Lab/ Challenge 9, Question 9
 
 ```{r dvs-4-1}
+allens |>
+  filter(Year == 2000, 
+         State == 'PA' | State == 'CA') |>
+  group_by(State) |>
+  summarize(Name, Count,
+            .groups = 'drop') |>
+  pivot_wider(names_from = Name,
+              values_from = Count, 
+              values_fill = 0) |>
+  gt()
 
-bieberDataset <- hiphop_clean |>
-  distinct(subj, .keep_all = TRUE) |>
-    filter(simple_ethnic == "white",
-           sex == "Male",
-           city >= 10000 & city <= 60000,
-           age >= 17,
-           age <= 23
-           ) |> 
-               select(c(subj, bieber)) |>
-                  slice_max(bieber)
-
-bieberDataset
 ```
 
 -   Example 2 - Lab 3, Question 11
@@ -795,76 +697,159 @@ slice_min(filtered, Average_Familiarity)
 
 **DVS-5: I can find summaries of variables across multiple groups.**
 
--   Example 1 - Lab 4, Question 3
+-   Example 1 - Lab/Challenge 9, Question 1
 
 ```{r dvs-5-1}
 
-avocado_major_regions |> 
-  filter(year == 2017, type == "organic") |>
-  summarize(region, `Total Volume`, Small_Hass,  Date) |>
-  slice_max(Small_Hass) 
+stateNames |>
+  filter(Name == 'Allison') |>
+  group_by(State, sex) |>
+  summarize(n = sum(Count),
+            .groups = 'drop') |>
+  pivot_wider(names_from = sex,
+              values_from = n, 
+              values_fill = 0) |>
+  gt() |>
+  cols_label(F = "Female",
+             M = "Male") |>
+  tab_header(title = "Number of Babies Born with the Name 'Allison' Born in Each State") |>
+  tab_options(row.striping.include_table_body = FALSE) %>%
+  tab_style(
+    style = cell_borders(
+      sides = "all",
+      color = "lightgreen",
+      weight = px(4),
+      style = "solid"
+    ),
+    locations = cells_body(
+      columns = everything(),
+      rows = everything()
+    )
+  )
 ```
 
--   Example 2 - Lab 4, Question 7
+-   Example 2 - Lab 7, Question 2
 
 ```{r dvs-5-2}
 
-avocado_california |> 
-  group_by(region, type) |>
-  summarize(Total_Mean = mean(`Total Volume`),
-            Small = mean(Small_Hass),
-            Large = mean(Large_Hass),
-            `Extra Large` = mean(`Extra_Large_Hass`),
-            .groups = 'drop') |>
-  pivot_longer(cols = Small:`Extra Large`, 
-               names_to = "Avocado Size",
-               values_to = "Mean Avocados Sold") |>
-  ggplot(mapping = aes(x = region,
-                       y = `Mean Avocados Sold`,
-                       fill = fct(`Avocado Size`,
-                                     levels = c("Small",
-                                                "Large",
-                                                "Extra Large")))) +
-    geom_bar(stat = "identity", position = "fill") +
-    facet_wrap(~ type) + 
-    labs(x = "Region of CA", 
-         y = "Proportion of Mean Avocados Sold",
-         fill = "Avocado Size") +
-    scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
-    scale_fill_brewer(palette = "Paired") 
-
-#Reference Link(s):
-  # https://stackoverflow.com/questions/47025828/change-the-order-of-stacked-fill-columns-in-ggplot2
-  # https://stackoverflow.com/questions/72545463/how-to-expand-color-palette-in-ggplot2
-  
+BlackfootFish |>
+  group_by(year, trip, section) |>
+  select(
+    where(~ sum(is.na(.x)) > 0)
+  ) |>
+  summarize(
+    across(
+      .cols = everything(),
+      ~ sum(is.na(.x))
+    ), 
+    .groups = 'drop'
+  ) |>
+  ggplot(mapping = aes(x = year, y = weight, color = section)) +
+  geom_point() + 
+  geom_segment(aes(yend = 0, xend = year)) +
+  facet_wrap(trip ~ section) +
+  labs(x = "Year", y = "Weight of Fish") +
+  theme(legend.position="none")
 ```
 
 **DVS-6: I can create tables which make my summaries clear to the reader.**
 
--   Example 1
+-   Example 1 - Lab/Challenge 9, Question 1
 
 ```{r dvs-6-1}
-N/A
+
+stateNames |>
+  filter(Name == 'Allison') |>
+  group_by(State, sex) |>
+  summarize(n = sum(Count),
+            .groups = 'drop') |>
+  pivot_wider(names_from = sex,
+              values_from = n, 
+              values_fill = 0) |>
+  gt() |>
+  cols_label(F = "Female",
+             M = "Male") |>
+  tab_header(title = "Number of Babies Born with the Name 'Allison' Born in Each State") |>
+  tab_options(row.striping.include_table_body = FALSE) %>%
+  tab_style(
+    style = cell_borders(
+      sides = "all",
+      color = "lightgreen",
+      weight = px(4),
+      style = "solid"
+    ),
+    locations = cells_body(
+      columns = everything(),
+      rows = everything()
+    )
+  )
 ```
 
 -   Example 2
 
 ```{r dvs-6-2}
-N/A
+
+allens |>
+  filter(Year == 2000, 
+         State == 'PA' | State == 'CA') |>
+  group_by(State) |>
+  summarize(Name, Count,
+            .groups = 'drop') |>
+  pivot_wider(names_from = Name,
+              values_from = Count, 
+              values_fill = 0) |>
+  gt()
 ```
 
 **DVS-7: I show creativity in my tables.**
 
--   Example 1
+-   Example 1 - Lab/Challenge 9, Question 1
 
 ```{r dvs-7-1}
-N/A
+
+stateNames |>
+  filter(Name == 'Allison') |>
+  group_by(State, sex) |>
+  summarize(n = sum(Count),
+            .groups = 'drop') |>
+  pivot_wider(names_from = sex,
+              values_from = n, 
+              values_fill = 0) |>
+  gt() |>
+  cols_label(F = "Female",
+             M = "Male") |>
+  tab_header(title = "Number of Babies Born with the Name 'Allison' Born in Each State") |>
+  tab_options(row.striping.include_table_body = FALSE) %>%
+  tab_style(
+    style = cell_borders(
+      sides = "all",
+      color = "lightgreen",
+      weight = px(4),
+      style = "solid"
+    ),
+    locations = cells_body(
+      columns = everything(),
+      rows = everything()
+    )
+  )
 ```
 
 -   Example 2
 
 ```{r dvs-7-2}
-N/A
+
+allens |>
+  filter(Year == 2000, 
+         State == 'PA' | State == 'CA') |>
+  group_by(State) |>
+  summarize(Name, Count = Count / sum(Count),
+            .groups = 'drop') |>
+  pivot_wider(names_from = Name,
+              values_from = Count, 
+              values_fill = 0) |>
+  gt() |>
+  fmt_percent(columns = c(Alan:Allan),
+              decimals = 2)
 ```
 
 ## Program Efficiency
@@ -873,18 +858,23 @@ N/A
 
 Using a single function call
 
--   Lab 3, Question 5
+-   Lab/ Challenge 8, Question 5
 
 ```{r pe-1-one-call}
 
-hiphop_clean <- hiphop |> 
-  mutate(
-    across(.cols = c(word, subj, sex, ethnic), .fns = ~as_factor(.x)), 
-    city = replace(city, city == 0, NA),
-    county = replace(county, county == 0, NA)
-  ) 
+rescale_column <- function(dataframe, columns){
+  stopifnot(is.data.frame(dataframe))
+  
+  rescaled_dataframe <- dataframe |>
+    mutate(
+      across(
+        .cols = {{columns}},
+        ~ rescale_01(.x)
+      )
+    )
+  return(rescaled_dataframe) 
+}
 
-hiphop_clean
 ```
 
 `across()`
@@ -905,24 +895,72 @@ hiphop_clean <- hiphop |>
 hiphop_clean
 ```
 
-`map()` functions
+`map()` functions - Lab/Challenge 8, "Step Four: Use Your Functions!"
 
 ```{r pe-1-map-1}
-N/A
+
+song <- map_chr(.x = 1:12, .f = ~ sing_day( xmas2, .x , Full.Phrase)) |>
+  cat()
 ```
 
 **PE-2: I can write functions to reduce repetition in my code.**
 
--   Example 1
+-   Example 1 - Lab/ Challenge 8, pluralize_gift() function
 
 ```{r pe2-1}
-N/A
+
+pluralize_gift <- function(gift){
+
+gift <- case_when(str_detect(gift, "oo") ~ str_replace(gift, "oo", "ee"),
+                  str_detect(gift, "y$") ~ str_replace(gift, "y$", "ies"),
+                  .default = glue("{gift}s"))
+  
+return(gift)
+
+}
 ```
 
--   Example 2
+-   Example 2 - Lab/Challenge 8, sing_day() function
 
 ```{r pe2-2}
-N/A
+
+# Produces the string for one day of the song.
+# Arguments -- dataset: A data frame containing information about gifts
+# Arguments -- line: The number of the line for the day you want to sing about
+# Arguments -- phrase_col: The variable name for the column in the dataset that contains the song phrases
+# Return -- A string singing the line of the song with all gifts for the given day.
+
+sing_day <- function(dataset, line, phrase_col){
+  
+  stopifnot(line > 0)
+  # Step 1: Setup the intro line
+  # Hint: You need to convert a number (e.g., 1) to a word (e.g., first)
+  num_word <- ordinal(line)
+  
+  intro <- glue::glue("On the {num_word} day of Christmas, my true love sent to me:")
+  
+  # Step 2: Sing the gift phrases
+
+  phrases <- dataset |>
+    pull({{phrase_col}})
+  
+  if(line > 1)
+      phrases[2] <- str_c( phrases[2], "and", sep = " ")
+  
+  phrases[1] <- str_c( phrases[1], ".")
+    
+  phrases <- rev(phrases)
+  phrases <- phrases[length(phrases) - line + 1  : line]
+  
+    
+  ## put it together
+  phrases <- str_flatten(phrases, collapse = "\n")
+  day_line <- str_c(intro, phrases,
+                    sep = "\n\n")
+
+  return(day_line)
+}
+
 ```
 
 **PE-3: I can use iteration to reduce repetition in my code.**
@@ -981,92 +1019,144 @@ avocado_major_regions <- avocado_major_regions |>
 
 `map()` functions (Provide 2 Examples)
 
--   Example 1 -
+-   Example 1 - Lab/Challenge 8, "Step Four: Use Your Functions!"
 
 ```{r pe-3-map-1}
-N/A
+song <- map_chr(.x = 1:12, .f = ~ sing_day( xmas2, .x , Full.Phrase)) |>
+  cat()
 ```
 
--   Example 2 -
+-   Example 2 - Lab/Challenge 8, make_phrase() - "Test Your Function"
 
 ```{r pe-3-map-2}
-N/A
+
+xmas2 <- xmas %>%
+  mutate(Full.Phrase = pmap_chr(.l = list(Day,
+                                          Day.in.Words,
+                                          Gift.Item,
+                                          Verb, 
+                                          Adjective,
+                                          Location),
+                                .f = make_phrase)
+         )
 ```
 
 **PE-4: I can use modern tools when carrying out my analysis.**
 
--   Example 1 - Lab 4, Question 7
+-   Example 1 - Lab/ Challenge 9, Question 1
 
 ```{r pe-4-1}
 
-avocado_california |> 
-  group_by(region, type) |>
-  summarize(Total_Mean = mean(`Total Volume`),
-            Small = mean(Small_Hass),
-            Large = mean(Large_Hass),
-            `Extra Large` = mean(`Extra_Large_Hass`),
+stateNames |>
+  filter(Name == 'Allison') |>
+  group_by(State, sex) |>
+  summarize(n = sum(Count),
             .groups = 'drop') |>
-  pivot_longer(cols = Small:`Extra Large`, 
-               names_to = "Avocado Size",
-               values_to = "Mean Avocados Sold") |>
-  ggplot(mapping = aes(x = region,
-                       y = `Mean Avocados Sold`,
-                       fill = fct(`Avocado Size`,
-                                  levels = c("Small",
-                                             "Large",
-                                             "Extra Large")))) +
-    geom_bar(stat = "identity", position = "fill") +
-    facet_wrap(~ type) + 
-    labs(x = "Region of CA", 
-         y = "Proportion of Mean Avocados Sold",
-         fill = "Avocado Size") +
-    scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
-    scale_fill_brewer(palette = "Paired") 
-
-#Reference Link(s):
-  # https://stackoverflow.com/questions/47025828/change-the-order-of-stacked-fill-columns-in-ggplot2
-  # https://stackoverflow.com/questions/72545463/how-to-expand-color-palette-in-ggplot2
+  pivot_wider(names_from = sex,
+              values_from = n, 
+              values_fill = 0) |>
+  gt() |>
+  cols_label(F = "Female",
+             M = "Male") |>
+  tab_header(title = "Number of Babies Born with the Name 'Allison' Born in Each State") |>
+  tab_options(row.striping.include_table_body = FALSE) %>%
+  tab_style(
+    style = cell_borders(
+      sides = "all",
+      color = "lightgreen",
+      weight = px(4),
+      style = "solid"
+    ),
+    locations = cells_body(
+      columns = everything(),
+      rows = everything()
+    )
+  )
+  
+#Refrence:
+#https://gt.rstudio.com/reference/cell_borders.html
   
 ```
 
--   Example 2 - Lab 4, Question 3
+-   Example 2 - Lab 4, Question 5
 
 ```{r pe-4-2}
 
-avocado_major_regions |> 
-  filter(year == 2017, type == "organic") |>
-  summarize(region, `Total Volume`, Small_Hass,  Date) |>
-  slice_max(Small_Hass) 
+#Get 5 metro regions with highest total sales of avocados
+  anti_join(x = avocado_clean, y = majorRegions, by = "region") |>
+  anti_join(y = minorRegions, by = "region") |>
+  filter(region != "California", region != "TotalUS") |>
+  group_by(region) |>
+  summarize(AverageVolume = mean(`Total Volume`)) |>
+  slice_max(order_by = AverageVolume, n = 5) |>
+  mutate(region = as.character(region)) |>
+  left_join( y = avocado_clean, by = "region") |>
+  ggplot(mapping = aes(x = `Total Volume`, y = region, fill = region)) +
+    geom_boxplot() + 
+    labs(x = "Total Volume of Avocados Sold", y = "Metro Region" )
 ```
 
 ## Data Simulation & Modeling
 
 **DSM-1: I can simulate data from a *variety* of probability models.**
 
--   Example 1
+-   Example 1 - Practice Activity 9.2, Catching a Con
 
 ```{r dsm-1-1}
-N/A
+
+set.seed(1957)
+
+music_man <- function(n_tromb, n_cor, n_reed){
+  
+  trombones <- rnorm(n_tromb, mean = 4.6, sd = 0.8)
+  cornets <- runif(n_cor, min = 1.5, max = 3.5)
+  reeds <- rchisq(n_reed, df = 4)
+  total_weight <- sum(trombones) + sum(cornets) + sum(reeds)
+  return(total_weight)
+  
+}
+
+my_weights <- map_dbl(.x = 1:1000, 
+                      .f = ~ music_man(n_tromb = 76, n_cor = 110, n_reed = 1035)
+                      ) 
 ```
 
--   Example 2
+-   Example 2 - Practice Activity 9.2, Warm Up
 
 ```{r dsm-1-2}
-N/A
+
+random <- rnorm(n = 100, mean = 4.6, sd = 0.8)
+
+sum(random < 4)
 ```
 
 **DSM-2: I can fit a linear regression and extract necessary summary measures.**
 
--   Example 1
+-   Example 1 - Lab 9, Questions 4 & 6
 
 ```{r dsm-2-1}
-N/A
+
+allison_lm <- allison_f |>
+  group_by(Year) |>
+  summarize(`Births per Year` = sum(Count)) |>
+  lm(`Births per Year` ~ Year, data = _)
+
+allison_lm |>
+  broom::augment() |>
+  ggplot(mapping = aes(y = .resid, x = .fitted)) +
+  geom_point()
 ```
 
--   Example 2
+-   Example 2 - Practice Activity 9.1, Questions 1 & 2
 
 ```{r dsm-2-2}
-N/A
+
+mystery <- mystery |>
+  lm(weight_after ~ weight_before, data = _) 
+
+broom::augment(mystery) |>
+  ggplot(mapping = aes(y = .resid, x = .fitted)) +
+  geom_point()
 ```
 
 ## Revising My Thinking

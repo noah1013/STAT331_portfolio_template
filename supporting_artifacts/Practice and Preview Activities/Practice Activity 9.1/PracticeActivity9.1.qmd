@@ -1,0 +1,28 @@
+---
+title: "Practice Activity 9.1"
+author: "Noah Tobinsky"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+```{r}
+library("tidyverse")
+library("here")
+mystery <- read_csv(here("Week 9", "Practice Activity 9.1", "mystery_animal.csv"))
+```
+
+```{r}
+mystery <- mystery |>
+  lm(weight_after ~ weight_before, data = _) 
+
+```
+
+```{r}
+broom::augment(mystery) |>
+  ggplot(mapping = aes(y = .resid, x = .fitted)) +
+  geom_point()
+```

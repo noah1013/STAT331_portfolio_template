@@ -1,5 +1,15 @@
 ---
-title: "Lightening Round Essays"
+title: "Lightning Round Essays"
 format: html
 editor: visual
 ---
+
+-   If Matthew Chen doesn't earn an A, then nobody should, because he does his best to ask questions when he needs and tries his hardest on every assignment.
+
+-   The most difficult part of this class was using stuff from stringr because there is so many things to use and/or memorize to get the best experience using the package.
+
+-   The easiest part of the class for me was functions since they are exactly like they are in other programming languages like Java and C (i.e. I'm already familiar with these concepts).
+
+-   The part of the class that interested me the most was R itself since its neither a object-oriented nor a compiled language, so learning a new type of language was super interesting to work with compared to others.
+
+-   The best piece of advice I can give to new STAT 331 students is to read over the main concepts prior to learning them through a lecture so that the lectures can fill in gaps from the readings.
